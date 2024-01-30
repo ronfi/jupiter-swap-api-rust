@@ -6,7 +6,7 @@ use std::str::FromStr;
 use crate::route_plan_with_metadata::RoutePlanWithMetadata;
 use crate::serde_helpers::field_as_string;
 use anyhow::{anyhow, Error};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer};
 use solana_sdk::pubkey::Pubkey;
 
 #[derive(Serialize, Deserialize, Clone, Debug, Default, PartialEq)]
@@ -65,8 +65,10 @@ pub struct QuoteRequest {
     pub slippage_bps: u16,
     /// Platform fee in basis points
     pub platform_fee_bps: Option<u8>,
+    #[serde(serialize_with = "serialize_vec_as_comma_separated_string")]
     pub dexes: Option<Vec<String>>,
-    pub excluded_dexes: Option<Vec<String>>,
+    #[serde(serialize_with = "serialize_vec_as_comma_separated_string")]
+    pub exclude_dexes: Option<Vec<String>>,
     /// Quote only direct routes
     pub only_direct_routes: Option<bool>,
     /// Quote fit into legacy transaction
@@ -75,8 +77,22 @@ pub struct QuoteRequest {
     /// this might dangerously limit routing ending up giving a bad price.
     /// The max is an estimation and not the exact count
     pub max_accounts: Option<usize>,
-    // Quote type to be used for routing, switches the algorithm
-    pub quote_type: Option<String>,
+}
+
+// Custom serializer for Vec<String> that joins elements with a comma
+fn serialize_vec_as_comma_separated_string<S>(
+    vec: &Option<Vec<String>>,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    if vec.is_none() {
+        return serializer.serialize_none();
+    } else {
+        let joined = vec.clone().unwrap().join(",");
+        serializer.serialize_str(&joined)
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
