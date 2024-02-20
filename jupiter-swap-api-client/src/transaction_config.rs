@@ -39,6 +39,8 @@ pub struct TransactionConfig {
     pub destination_token_account: Option<Pubkey>,
     /// compute unit price to prioritize the transaction, the additional fee will be compute unit consumed * computeUnitPriceMicroLamports
     pub compute_unit_price_micro_lamports: Option<ComputeUnitPriceMicroLamports>,
+    /// prioritze the transaction by paying a fee in lamports
+    pub prioritization_fee_lamports: Option<ComputeUnitPriceMicroLamports>,
     /// Request a legacy transaction rather than the default versioned transaction, needs to be paired with a quote using asLegacyTransaction otherwise the transaction might be too large
     ///
     /// Default: false
@@ -62,6 +64,7 @@ impl Default for TransactionConfig {
             fee_account: None,
             destination_token_account: None,
             compute_unit_price_micro_lamports: None,
+            prioritization_fee_lamports: None,
             as_legacy_transaction: false,
             use_shared_accounts: true,
             use_token_ledger: false,
